@@ -25,8 +25,8 @@ To write a python program for simulating ARP protocols using TCP.
 ```
 import socket
 s = socket.socket()
-s.connect(('localhost', 8001))
-ip = input("Enter IP Address: ")
+s.connect(('localhost', 8000))
+ip = input("Enter IP address: ")
 s.send(ip.encode())
 mac = s.recv(1024).decode()
 print("MAC Address:", mac)
@@ -36,37 +36,33 @@ s.close()
 ```
 import socket
 s = socket.socket()
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind(('localhost', 8001))
-s.listen(1)
-print("ARP Server waiting for client...")
-c, addr = s.accept()
-print("Client connected")
-ip = c.recv(1024).decode()
-print("Received IP Address:", ip)
+s.bind(('localhost', 8000))
+s.listen(5)
+print("ARP Server is running...")
+# IP-MAC address mapping
 arp_table = {
-    "10.104.8.61": "FC:6D:77:8A:DF:F4",
-    "192.168.1.1": "AA:BB:CC:DD:EE:01",
-    "192.168.1.2": "AA:BB:CC:DD:EE:02"
+    "192.168.1.10": "AA:BB:CC:DD:EE:01",
+    "192.168.1.20": "AA:BB:CC:DD:EE:02",
+    "192.168.1.30": "AA:BB:CC:DD:EE:03"
 }
-if ip in arp_table:
-    mac = arp_table[ip]
-else:
-    mac = "IP Address not found"
-c.send(mac.encode())
-print("MAC Address:", mac)
-c.close()
-s.close()
+while True:
+    c, addr = s.accept()
+    print("Client connected:", addr)
+    ip = c.recv(1024).decode()
+    if ip in arp_table:
+        mac = arp_table[ip]
+        c.send(mac.encode())
+    else:
+        c.send("IP address not found".encode())
+    c.close()
 ```
 ## OUPUT - ARP
 
 ## Client
 
-<img width="1361" height="153" alt="image" src="https://github.com/user-attachments/assets/d6a8f13c-fd95-4e9c-912f-e04b71b8fbe5" />
 
 ## Server
 
-<img width="1359" height="187" alt="image" src="https://github.com/user-attachments/assets/9a54b837-ea5b-4039-9397-fc594079d603" />
 
 ## PROGRAM - RARP
 
@@ -74,8 +70,8 @@ s.close()
 ```
 import socket
 s = socket.socket()
-s.connect(('localhost', 8002))
-mac = input("Enter MAC Address: ").strip().upper()
+s.connect(('localhost', 8001))
+mac = input("Enter MAC address: ")
 s.send(mac.encode())
 ip = s.recv(1024).decode()
 print("IP Address:", ip)
@@ -85,22 +81,33 @@ s.close()
 ```
 import socket
 s = socket.socket()
-s.connect(('localhost', 8002))
-mac = input("Enter MAC Address: ").strip().upper()
-s.send(mac.encode())
-ip = s.recv(1024).decode()
-print("IP Address:", ip)
-s.close()
+s.bind(('localhost', 8001))
+s.listen(5)
+print("RARP Server is running...")
+# MAC-IP address mapping
+rarp_table = {
+    "AA:BB:CC:DD:EE:01": "192.168.1.10",
+    "AA:BB:CC:DD:EE:02": "192.168.1.20",
+    "AA:BB:CC:DD:EE:03": "192.168.1.30"
+}
+while True:
+    c, addr = s.accept()
+    print("Client connected:", addr)
+    mac = c.recv(1024).decode().upper()
+    if mac in rarp_table:
+        ip = rarp_table[mac]
+        c.send(ip.encode())
+    else:
+        c.send("MAC address not found".encode())
+    c.close()
 ```
 ## OUPUT -RARP
 
 ## Client
 
-<img width="1342" height="108" alt="image" src="https://github.com/user-attachments/assets/5d5fe2b2-7c90-44eb-82e2-80e2de01bc0d" />
 
 ## Server
 
-<img width="1305" height="178" alt="image" src="https://github.com/user-attachments/assets/9480c95b-bf44-458d-9ec9-f05b64d0f6fe" />
 
 ## RESULT
 
